@@ -10,3 +10,5 @@ elif vyper.__version__ == '0.4.0' and 'enable_decimals' in conf.extra_flags:
     from vyperProtoNew_pb2 import *
 elif vyper.__version__ == '0.4.0':
     from vyperProtoNewNoDecimal_pb2 import *
+else:
+    from vyperProtoIvy_pb2 import *
