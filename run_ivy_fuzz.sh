@@ -30,21 +30,12 @@ python fuzz/runners/runner_ivy.py > logs/adder_fuzzing.log 2>&1 &
 echo "Starting nagini service fuzzing..."
 SERVICE_NAME=nagini python fuzz_runners/runner_nagini.py > logs/nagini_fuzzing.log 2>&1 &
 
-# Deactivate default venv
-deactivate
-
-# Activate ivy venv for run_diff_ivy.py
-source venv_ivy/bin/activate
 echo "Starting diff ivy generator..."
 python fuzz/generators/run_diff_ivy.py > logs/diff_ivy.log 2>&1 &
-deactivate
 
-# Back to default venv for the verifier
-source venv/bin/activate
 echo "Starting ivy verifier..."
 python fuzz/verifiers/verifier_ivy.py > logs/verifier_ivy.log 2>&1 &
 deactivate
-
 
 echo "All processes started. Logs are being written to the logs/ directory."
 echo "You can monitor the logs with: tail -f logs/*.log"
