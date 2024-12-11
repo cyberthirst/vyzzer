@@ -2,9 +2,9 @@
 
 ### Setup virtual environment
 - the process of installation isn't yet streamlined and contains some issues. The following steps are known to be working against ubuntu lts
-- tested against Python 3.10.10 venv
-- install ivy: `git clone https://github.com/cyberthirst/ivy.git` and run `pip install .` inside the `ivy` dir
-- install the latest `boa`
+- tested against Python 3.10.10 venvs
+- install ivy in venv_ivy: `git clone https://github.com/cyberthirst/ivy.git` and run `pip install .` inside the `ivy` dir
+- rest of installs should be done in `venv`
 - installation of the requirements.txt is a bit problematic due to compilation of protobuf-mutator
   - we temporarily resolved the problem by manually cloning `https://github.com/google/atheris.git` and manually installing ontents of `atheris/contrib/libprotobuf_mutator
     - the install fails but we modified its `setup.py` with
@@ -18,6 +18,7 @@
          "//:_mutator.so"],
 ```
     - which resolved the issue
+    - also, we created temp_requirements.txt which don't include the problematic libprotobuf-mutator package
 
 
 ### Periphery

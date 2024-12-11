@@ -2,6 +2,11 @@
 
 mkdir -p logs
 
+# Stop and remove any existing containers with same ports
+docker stop $(docker ps -q --filter publish=27017)
+docker stop $(docker ps -q --filter publish=5672)
+docker stop $(docker ps -q --filter publish=5673)
+
 # Start Docker containers
 echo "Starting MongoDB..."
 docker run -d -p 27017:27017 mongo
@@ -15,20 +20,31 @@ docker run -d -p 5673:5672 -p 15673:15672 rabbitmq:management
 echo "Waiting 10s for services to start up..."
 sleep 10
 
-source venv/bin/activate
 export PYTHONPATH=$(pwd)
 
+# Start first processes in default venv
+source venv/bin/activate
 echo "Starting adder service fuzzing..."
-nohup python fuzz/runners/runner_ivy.py > logs/adder_fuzzing.log 2>&1 &
+python fuzz/runners/runner_ivy.py > logs/adder_fuzzing.log 2>&1 &
 
 echo "Starting nagini service fuzzing..."
 SERVICE_NAME=nagini python fuzz_runners/runner_nagini.py > logs/nagini_fuzzing.log 2>&1 &
 
+# Deactivate default venv
+deactivate
+
+# Activate ivy venv for run_diff_ivy.py
+source venv_ivy/bin/activate
 echo "Starting diff ivy generator..."
 python fuzz/generators/run_diff_ivy.py > logs/diff_ivy.log 2>&1 &
+deactivate
 
+# Back to default venv for the verifier
+source venv/bin/activate
 echo "Starting ivy verifier..."
 python fuzz/verifiers/verifier_ivy.py > logs/verifier_ivy.log 2>&1 &
+deactivate
+
 
 echo "All processes started. Logs are being written to the logs/ directory."
 echo "You can monitor the logs with: tail -f logs/*.log"
