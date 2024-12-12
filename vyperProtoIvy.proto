@@ -85,10 +85,10 @@ message BoolExpression {
 message AddressExpression {
   oneof expr {
     CreateMinimalProxy cmp = 1;
-    CreateFromBlueprint cfb = 2;
+    // CreateFromBlueprint cfb = 2;
     VarRef varRef = 4;
     CreateCopyOf cco = 5;
-    EcRecover ecRec = 6;
+    // EcRecover ecRec = 6;
     ConvertFromInt convert_int = 7;
     ConvertFromBytesM convert_bytesm = 8;
     BytesExpression convert_bytes = 9;
@@ -150,7 +150,7 @@ message ConvertFromBytesM {
 message BytesMExpression {
   Literal lit = 3;
   oneof expr {
-    Sha256 sha = 1;
+    // Sha256 sha = 1;
     VarRef varRef = 2;
     Keccak256 keccak = 4;
     ConvertFromInt convert_int = 5;
@@ -234,8 +234,8 @@ message FixedListBytesM{
 message FixedListInt{
   oneof other {
     VarRef varRef = 3;
-    EcAdd ecadd = 4;
-    EcMul ecmul = 5;
+    // EcAdd ecadd = 4;
+    // EcMul ecmul = 5;
   }
   IntExpression rexp = 1;
   repeated IntExpression exp = 2;
@@ -462,7 +462,7 @@ message Statement {
     PopArray pop_stmt = 12;
     SendStatement send_stmt = 13;
     RawCall raw_call = 14;
-    RawLog raw_log = 15;
+    // RawLog raw_log = 15;
   }
   AssignmentStatement assignment = 2;
 }
@@ -624,7 +624,7 @@ message CreateFromBlueprint {
 message SendStatement {
   AddressExpression to = 1;
   IntExpression amount = 2;
-  optional IntExpression gas = 3;
+  // optional IntExpression gas = 3;
 }
 
 message Selfdestruct {
@@ -651,9 +651,9 @@ message ExitStatement {
   bool flag = 1;
   ReturnPayload payload = 2;
   oneof exit_st {
-    Selfdestruct selfd = 3;
+    // Selfdestruct selfd = 3;
     RaiseStatement raise_st = 4;
-    RawRevert raw_revert = 5;
+    // RawRevert raw_revert = 5;
   }
 }
 
@@ -695,7 +695,7 @@ message RawCall {
   AddressExpression to = 1;
   BytesExpression data = 2;
   Literal max_out = 3;
-  optional IntExpression gas = 4;
+  // optional IntExpression gas = 4;
   optional IntExpression value = 5;
   Literal delegate = 6;
   Literal static = 7;
