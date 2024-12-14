@@ -196,11 +196,11 @@ class TypedConverter:
         current_type = self.type_stack[len(self.type_stack) - 1]
         base_type = current_type.base_type
 
-        if isinstance(base_type, Int) and base_type.n == 256 and current_type.size == 2:
-            if list.HasField("ecadd"):
-                return self._visit_ecadd(list.ecadd)
-            if list.HasField("ecmul"):
-                return self._visit_ecmul(list.ecmul)
+        # if isinstance(base_type, Int) and base_type.n == 256 and current_type.size == 2:
+        #     if list.HasField("ecadd"):
+        #         return self._visit_ecadd(list.ecadd)
+        #     if list.HasField("ecmul"):
+        #         return self._visit_ecmul(list.ecmul)
 
         handler, _ = self._expression_handlers[base_type.name]
         list_size = 1
@@ -566,8 +566,8 @@ class TypedConverter:
             return self._visit_send_stmt(statement.send_stmt)
         if statement.HasField("raw_call"):
             return self._visit_raw_call(statement.raw_call)
-        if statement.HasField("raw_log"):
-            return self._visit_raw_log(statement.raw_log)
+        # if statement.HasField("raw_log"):
+        #     return self._visit_raw_log(statement.raw_log)
         return self._visit_assignment(statement.assignment)
 
     def _visit_raw_log(self, raw_log):
@@ -645,13 +645,13 @@ class TypedConverter:
     def _visit_exit_statement(self, exit_st, force_return):
         exit_result = ""
         # can omit return statement if no outputs
-        if exit_st.HasField("selfd"):
-            exit_result = self._visit_selfd(exit_st.selfd)
-        elif exit_st.HasField("raise_st"):
-            exit_result = self._visit_raise_statement(exit_st.raise_st)
-        elif exit_st.HasField("raw_revert"):
-            exit_result = self._visit_raw_revert(exit_st.raw_revert)
-        elif len(self._function_output) > 0 or exit_st.flag or force_return:
+        # if exit_st.HasField("selfd"):
+        #     exit_result = self._visit_selfd(exit_st.selfd)
+        # elif exit_st.HasField("raise_st"):
+        #     exit_result = self._visit_raise_statement(exit_st.raise_st)
+        # elif exit_st.HasField("raw_revert"):
+        #     exit_result = self._visit_raw_revert(exit_st.raw_revert)
+        if len(self._function_output) > 0 or exit_st.flag or force_return:
             exit_result = self._visit_return_payload(exit_st.payload)
 
         return exit_result
@@ -696,13 +696,13 @@ class TypedConverter:
         if expr.HasField("cmp") and not self._is_constant:
             name = "create_minimal_proxy_to"
             return self.visit_create_min_proxy_or_copy_of(expr.cmp, name)
-        if expr.HasField("cfb") and not self._is_constant:
-            return self.visit_create_from_blueprint(expr.cfb)
+        # if expr.HasField("cfb") and not self._is_constant:
+        #     return self.visit_create_from_blueprint(expr.cfb)
         if expr.HasField("cco") and not self._is_constant:
             name = "create_copy_of"
             return self.visit_create_min_proxy_or_copy_of(expr.cco, name)
-        if expr.HasField("ecRec"):
-            return self.visit_ecrecover(expr.ecRec)
+        # if expr.HasField("ecRec"):
+        #     return self.visit_ecrecover(expr.ecRec)
         if expr.HasField("varRef"):
             # TODO: it has to be decided how exactly to track a current block level or if it has to be passed
             result = self._visit_var_ref(expr.varRef, self._block_level_count)
@@ -943,13 +943,13 @@ class TypedConverter:
 
     def _visit_bytes_m_expression(self, expr):
         current_type = self.type_stack[len(self.type_stack) - 1]
-        if expr.HasField("sha"):
-            name = "sha256"
-            result = self._visit_hash256(expr.sha, name)
-            # the length of current BytesM might me less than 32, hence the result must be converted
-            if current_type.m != 32:
-                result = f"convert({result}, {current_type.vyper_type})"
-            return result
+        # if expr.HasField("sha"):
+        #     name = "sha256"
+        #     result = self._visit_hash256(expr.sha, name)
+        #     # the length of current BytesM might me less than 32, hence the result must be converted
+        #     if current_type.m != 32:
+        #         result = f"convert({result}, {current_type.vyper_type})"
+        #     return result
         if expr.HasField("keccak"):
             name = "keccak256"
             result = self._visit_hash256(expr.keccak, name)
@@ -1113,9 +1113,9 @@ class TypedConverter:
         value = self._visit_int_expression(stmt.amount)
         result = f"{result}, {value}"
 
-        if stmt.HasField("gas"):
-            salt = self._visit_int_expression(stmt.gas)
-            result = f"{result}, gas={salt}"
+        # if stmt.HasField("gas"):
+        #     salt = self._visit_int_expression(stmt.gas)
+        #     result = f"{result}, gas={salt}"
         self.type_stack.pop()
 
         result = f"{result})"
@@ -1178,9 +1178,9 @@ class TypedConverter:
         elif expr_size != 0:
             result += f", max_outsize={expr_size}"
 
-        if rc.HasField("gas"):
-            gas = self._visit_int_expression(rc.gas)
-            result += f", gas={gas}"
+        # if rc.HasField("gas"):
+        #     gas = self._visit_int_expression(rc.gas)
+        #     result += f", gas={gas}"
         if rc.HasField("value"):
             value = self._visit_int_expression(rc.value)
             result += f", value={value}"
