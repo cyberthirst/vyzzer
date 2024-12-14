@@ -15,9 +15,13 @@ class RunnerNagini(RunnerBase):
             RunnerBase.init_compiler_settings(self)
             return
 
+    # currently we're overriding the parent because we're dumping
+    # the contract's storage via boa, not from the computation obj
     def execution_result(self, _contract, fn, _input_values, internal=False):
         try:
             self.logger.debug("calling %s with calldata: %s", fn, _input_values)
+            # internal function calls are not yet enables in runner_api.py
+            # so the if branch is currently never taken
             if internal:
                 pass
             else:

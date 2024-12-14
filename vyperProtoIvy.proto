@@ -598,15 +598,15 @@ message CreateCopyOf {
 }
 
 // ecrecover(hash: bytes32, v: uint256 | uint8, r: uint256 | bytes32, s: uint256 | bytes32)
-message EcRecover {
-  BytesMExpression hash = 1;
-  optional IntExpression v8 = 2;
-  IntExpression vi = 3;
-  optional BytesMExpression rb = 4;
-  IntExpression ri = 5;
-  optional BytesMExpression sb = 6;
-  IntExpression si = 7;
-}
+//message EcRecover {
+//  BytesMExpression hash = 1;
+//  optional IntExpression v8 = 2;
+//  IntExpression vi = 3;
+//  optional BytesMExpression rb = 4;
+//  IntExpression ri = 5;
+//  optional BytesMExpression sb = 6;
+//  IntExpression si = 7;
+//}
 
 message CreateFromBlueprint {
   message RawArgs {
@@ -627,17 +627,17 @@ message SendStatement {
   // optional IntExpression gas = 3;
 }
 
-message Selfdestruct {
-  AddressExpression to = 1;
-}
+//message Selfdestruct {
+//  AddressExpression to = 1;
+//}
 
-message Sha256 {
-  oneof typed_value {
-    StringExpression strVal = 1;
-    BytesExpression bVal = 2;
-  }
-  BytesMExpression bmVal = 3;
-}
+//message Sha256 {
+//  oneof typed_value {
+//    StringExpression strVal = 1;
+//    BytesExpression bVal = 2;
+//  }
+//  BytesMExpression bmVal = 3;
+//}
 
 message Keccak256 {
   oneof typed_value {
@@ -661,9 +661,9 @@ message RaiseStatement {
   StringExpression errval = 1;
 }
 
-message RawRevert {
-  BytesExpression data = 1;
-}
+//message RawRevert {
+//  BytesExpression data = 1;
+//}
 
 message ReturnPayload {
   TypedExpression one = 1;
@@ -702,15 +702,15 @@ message RawCall {
   Literal revert = 8;
 }
 
-message EcAdd {
-  FixedListInt x = 1;
-  FixedListInt y = 2;
-}
+//message EcAdd {
+//  FixedListInt x = 1;
+//  FixedListInt y = 2;
+//}
 
-message EcMul {
-  FixedListInt point = 1;
-  IntExpression scalar = 2;
-}
+//message EcMul {
+//  FixedListInt point = 1;
+//  IntExpression scalar = 2;
+//}
 
 message ConcatString {
   StringTypeSize a = 1;

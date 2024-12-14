@@ -26,14 +26,14 @@ export PYTHONPATH=$(pwd)
 source venv/bin/activate
 
 echo "Starting adder service fuzzing..."
-SERVICE_NAME=adder python fuzz/runners/runner_ivy.py > logs/adder_fuzzing.log 2>&1 &
+SERVICE_NAME=adder python fuzz/runners/runner_ivy.py > logs/adder_runner.log 2>&1 &
 
 echo "Starting nagini service fuzzing..."
-SERVICE_NAME=nagini python fuzz/runners/runner_nagini.py > logs/nagini_fuzzing.log 2>&1 &
+SERVICE_NAME=nagini python fuzz/runners/runner_nagini.py > logs/nagini_runner.log 2>&1 &
 
 echo "Starting diff ivy generator..."
 protoc  --python_out=./ ./vyperProtoIvy.proto
-python fuzz/generators/run_diff_ivy.py > logs/diff_ivy.log 2>&1 &
+python fuzz/generators/run_diff_ivy.py > logs/generator.log 2>&1 &
 
 echo "Starting ivy verifier..."
 python fuzz/verifiers/verifier_ivy.py > logs/verifier_ivy.log 2>&1 &
@@ -41,6 +41,6 @@ python fuzz/verifiers/verifier_ivy.py > logs/verifier_ivy.log 2>&1 &
 deactivate
 
 echo "All processes started. Logs are being written to the logs/ directory."
-echo "You can monitor the logs with: tail -f logs/*.log"
+echo "You can monitor the logs with: ./scripts/check_output.sh"
 echo "To stop the processes later, exit the shell."
 

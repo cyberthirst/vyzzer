@@ -22,15 +22,19 @@ class VerifierIvy (VerifierBase):
             d[name] = self.verify_and_catch(verifier, params)
         return d
 
-    # To change the verification logic override functions below
+    # storagex are dicts mapping variable names to their decoded values
     def storage_verifier(self, storage0, storage1):
-        #todo
         if storage0 != storage1:
             raise VerifierException(f"Storage discrepancy: {storage0} | {storage1}")
 
     def compilation_error_handler(self, _res0, _res1):
-        pass
-    
+        if not isinstance(_res0, str):
+            return
+        compilation_err_str = "This is an unhandled internal compiler error."
+        if compilation_err_str in _res0:
+            assert compilation_err_str in _res1
+            raise VerifierException("This is an unhandled internal compiler error.")
+
 verifier = VerifierIvy()
 
 verifier.start_verifier()
