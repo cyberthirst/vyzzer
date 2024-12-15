@@ -59,14 +59,14 @@ pytest-cov==4.1.0
 PyYAML==6.0.1
 pyyml==0.0.2
 regex==2024.5.15
-requests==2.31.0
+requests==2.32.3
 rich==13.7.1
 rlp==4.0.1
 rsa==4.9
 six==1.16.0
 sortedcontainers==2.4.0
 soupsieve==2.5
-titanoboa @ git+https://github.com/Leminkay/titanoboa.git@7a6036b421db71ea0817bc120103d3da9a4af697
+titanoboa @ git+https://github.com/cyberthirst/titanoboa.git@vyzzer-fuzzing
 ivy @ git+https://github.com/cyberthirst/ivy.git@main
 tomli==2.0.1
 toolz==0.12.1
