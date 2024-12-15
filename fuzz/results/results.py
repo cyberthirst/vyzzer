@@ -31,8 +31,8 @@ def dump_verification_results(host=None, port=None):
         # Prepare output data
         output_data = {
             "generation_id": generation_id,
-            "contract_code": contract_data.get("generation_result", ""),
-            "function_inputs": contract_data.get("function_input_values", ""),
+            "contract_code": contract_data['generation_result_nagini'],
+            "function_inputs": contract_data['function_input_values'],
             "compilation_results": {},
             "verification_results": ver_result["results"]
         }

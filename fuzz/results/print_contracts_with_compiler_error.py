@@ -12,14 +12,9 @@ def print_contracts_with_compile_error(host=None, port=None):
     contracts_with_errors = compilation_log.find({"error_type": {"$ne": None}})
 
     for contract_data in contracts_with_errors:
-        if contract_data['error_type'] == 'StaticAssertionException':
-            continue
-        if contract_data['error_message'].startswith('Value must be a literal integer, unless a bound is specified'):
-            continue
-        print("======================================================")
-        print(f"error_type:\n{contract_data['error_type']}")
-        print(f"error_message:\n{contract_data['error_message']}")
-        print(f"contract_code:\n{contract_data['generation_result_nagini']}")
+        if contract_data['error_message'].find('This is an unhandled') != -1:
+            print("======================================================")
+            print(f"error_message:\n{contract_data['error_message']}")
 
 if __name__ == "__main__":
     print_contracts_with_compile_error()
