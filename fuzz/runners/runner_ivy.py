@@ -1,6 +1,7 @@
 import json
 import os
 from ivy.frontend.loader import loads
+from ivy.frontend.env import Env
 from runner_api import RunnerBase
 from fuzz.helpers.json_encoders import ExtendedEncoder, ExtendedDecoder
 
@@ -38,6 +39,7 @@ class RunnerDiff(RunnerBase):
             
             print("smth works still\n")
             results.append(_r)
+        Env().clear_state()
         return results
     
 

@@ -89,6 +89,7 @@ class RunnerBase:
                 _r[fn] = function_call_res
             """
             results.append(_r)
+        boa.reset_env()
         return results
 
     def execution_result(self, _contract, fn, _input_values, internal=False):
