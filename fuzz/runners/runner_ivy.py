@@ -14,12 +14,7 @@ class RunnerDiff(RunnerBase):
     def init_compiler_settings(self):
         pass
 
-
-    def handle_compilation(self, _contract_desc):
-        input_values = json.loads(
-            _contract_desc["function_input_values"], cls=ExtendedDecoder)
-        init_values = input_values.get("__init__", [[]])
-
+    def _handle_compilation(self, _contract_desc, input_values, init_values):
         results = []
         for iv in init_values:
             self.logger.debug("Constructor values: %s", iv)

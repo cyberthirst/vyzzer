@@ -1,6 +1,7 @@
 import json
 import os
 import logging
+from concurrent.futures import ThreadPoolExecutor, TimeoutError
 
 import pika.exceptions
 import boa
@@ -52,10 +53,19 @@ class RunnerBase:
         return "generation_result"
 
     def handle_compilation(self, _contract_desc):
-        input_values = json.loads(
-            _contract_desc["function_input_values"], cls=ExtendedDecoder)
-        init_values = input_values.get("__init__", [[]])
+        with ThreadPoolExecutor(max_workers=1) as executor:
+            input_values = json.loads(
+                _contract_desc["function_input_values"], cls=ExtendedDecoder)
+            init_values = input_values.get("__init__", [[]])
+            future = executor.submit(self._handle_compilation, _contract_desc, input_values, init_values)
+            try:
+                # give each execution 5s to finish
+                return future.result(timeout=5*len(init_values))  # 5 seconds timeout
+            except TimeoutError:
+                self.logger.debug("Compilation timed out after 5 seconds")
+                return [{"runtime_error": "Compilation exceeded 5 seconds limit"}]
 
+    def _handle_compilation(self, _contract_desc, input_values, init_values):
         results = []
         for iv in init_values:
             self.logger.debug("Constructor values: %s", iv)
