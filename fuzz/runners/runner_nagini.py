@@ -25,12 +25,13 @@ class RunnerNagini(RunnerBase):
             if internal:
                 pass
             else:
-                _, res = getattr(_contract, fn)(*_input_values)
+                res = getattr(_contract, fn)(*_input_values)
             self.logger.debug("%s result: %s", fn, res)
             dump = _contract._storage.dump()
             _function_call_res = dict(state = dump, return_value = json.dumps(res, cls = ExtendedEncoder))
         except Exception as e:
-            res = str(e)
+            #res = str(e)
+            res = str(e).encode('utf-8', 'replace').decode('utf-8')
             self.logger.debug("%stattr(_contract.internal, fn)(*_input_values) caught error: %s", fn, res)
             _function_call_res = dict(runtime_error=res)
         return _function_call_res

@@ -61,7 +61,8 @@ class RunnerDiff(RunnerBase):
             _function_call_res = dict(state = dump, return_value = json.dumps(res, cls = ExtendedEncoder))
             print("here3\n")
         except Exception as e:
-            res = str(e)
+            #res = str(e)
+            res = str(e).encode('utf-8', 'replace').decode('utf-8')
             self.logger.debug("%s caught error: %s", fn, res)
             _function_call_res = dict(runtime_error=res)
         return _function_call_res
