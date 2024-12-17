@@ -38,9 +38,12 @@ python fuzz/generators/run_diff_ivy.py > logs/generator.log 2>&1 &
 echo "Starting ivy verifier..."
 python fuzz/verifiers/verifier_ivy.py > logs/verifier_ivy.log 2>&1 &
 
+echo "Starting RAM monitor..."
+./scripts/ram_monitor.sh > logs/ram_monitor.log 2>&1 &
+
 deactivate
 
 echo "All processes started. Logs are being written to the logs/ directory."
 echo "You can monitor the logs with: ./scripts/check_output.sh"
-echo "To stop the processes later, exit the shell."
+echo "To stop the processes later, exit the shell or kill everything with ./scripts/kill_fuzzer.sh ."
 
