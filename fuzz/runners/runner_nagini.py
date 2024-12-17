@@ -1,7 +1,5 @@
-import os
 from runner_api import RunnerBase
 import json
-import boa
 from fuzz.helpers.json_encoders import ExtendedEncoder, ExtendedDecoder
 
 # Override class methods
