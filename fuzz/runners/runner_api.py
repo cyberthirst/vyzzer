@@ -69,25 +69,9 @@ class RunnerBase:
 
             _r = dict()
             externals = [c for c in dir(contract) if c.startswith('func')]
-            internals = [c for c in dir(
-                contract.internal) if c.startswith('func')]
             for fn in externals:
-                function_call_res = []
                 _r[fn] = [self.execution_result(contract, fn, input_values[fn][i])
                           for i in range(self.inputs_per_function)]
-            """
-            for fn in internals:
-                function_call_res = []
-                _r[fn] = [self.execution_result(
-                    contract, fn, input_values[fn][i], internal=True)
-                    for i in range(self.inputs_per_function)]
-            
-            fn = "__default__"
-            if fn in dir(contract):
-                function_call_res = [self.execution_result(contract, fn, [])
-                                     for i in range(self.inputs_per_function)]
-                _r[fn] = function_call_res
-            """
             results.append(_r)
         boa.reset_env()
         return results
