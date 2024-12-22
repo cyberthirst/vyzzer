@@ -414,10 +414,9 @@ class TypedConverter:
         return result
 
     def _visit_for_stmt_ranged(self, for_stmt_ranged):
-        start, stop = (
-            for_stmt_ranged.start, for_stmt_ranged.stop) if for_stmt_ranged.start < for_stmt_ranged.stop else (
-            for_stmt_ranged.stop, for_stmt_ranged.start
-        )
+        start = random.randint(0, 40)
+        stop = random.randint(40, 100)
+
         if stop == start:
             stop += 1
         ivar_type = Int()
