@@ -67,12 +67,12 @@ six==1.16.0
 sortedcontainers==2.4.0
 soupsieve==2.5
 titanoboa @ git+https://github.com/cyberthirst/titanoboa.git@vyzzer-fuzzing
-ivy @ git+https://github.com/cyberthirst/ivy.git@main
+ivy @ git+https://github.com/cyberthirst/ivy.git@vyzzer-fuzzing
 tomli==2.0.1
 toolz==0.12.1
 trie==3.0.1
 typing_extensions==4.12.2
 uritemplate==4.1.1
 urllib3==2.1.0
-vyper @ git+https://github.com/vyperlang/vyper.git@v0.4.1b2
+vyper @ git+https://github.com/cyberthirst/vyper.git@vyzzer-patch
 zipp==3.17.0
