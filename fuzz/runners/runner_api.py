@@ -36,18 +36,23 @@ class RunnerBase:
                 exit(1)
 
     def callback(self, ch, method, properties, body):
-        data = json.loads(body)
+        try:
+            data = json.loads(body)
+            self.logger.debug("Compiling contract id: %s", data["_id"])
 
-        self.logger.debug("Compiling contract id: %s", data["_id"])
+            result = self.handle_compilation(data)
+            self.logger.debug("Compilation and execution result: %s", result)
 
-        result = self.handle_compilation(data)
-        self.logger.debug("Compilation and execution result: %s", result)
-
-        self.queue_collection.update_one({"_id": ObjectId(data["_id"])},
-                                         {"$set": {f"compiled_{self.compiler_key}": True}})
-        self.run_results_collection.update_one({"generation_id": data["_id"]},
-                                               {"$set": {f"result_{self.compiler_key}": result, "is_handled": False}})
-        ch.basic_ack(delivery_tag=method.delivery_tag)
+            self.queue_collection.update_one({"_id": ObjectId(data["_id"])},
+                                             {"$set": {f"compiled_{self.compiler_key}": True}})
+            self.run_results_collection.update_one({"generation_id": data["_id"]},
+                                                   {"$set": {f"result_{self.compiler_key}": result,
+                                                             "is_handled": False}})
+        except Exception as e:
+            self.logger.error("Error in callback: %s", str(e))
+        finally:
+            # Always acknowledge the message, even if processing failed
+            ch.basic_ack(delivery_tag=method.delivery_tag)
 
     def generation_result(self):
         return "generation_result"
@@ -57,12 +62,14 @@ class RunnerBase:
             input_values = json.loads(
                 _contract_desc["function_input_values"], cls=ExtendedDecoder)
             init_values = input_values.get("__init__", [[]])
+            timeout_limit = max(5 * len(init_values), 50)
             future = executor.submit(self._handle_compilation, _contract_desc, input_values, init_values)
             try:
                 # give each execution 5s to finish
-                return future.result(timeout=5*len(init_values))  # 5 seconds timeout
+                return future.result(timeout=timeout_limit)
             except TimeoutError:
-                self.logger.debug("Compilation timed out after 5 seconds")
+                executor.shutdown(wait=False)
+                self.logger.debug(f"Compilation timed out after {timeout_limit} seconds")
                 return [{"runtime_error": "Compilation exceeded 5 seconds limit"}]
 
     def _handle_compilation(self, _contract_desc, input_values, init_values):
