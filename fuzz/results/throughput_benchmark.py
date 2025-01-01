@@ -32,6 +32,7 @@ class FuzzerMonitor:
     def __init__(self, host: Optional[str] = None, port: Optional[int] = None):
         self.host = host
         self.port = port
+        self.total_time = 0
         self.reset_state()
 
     def reset_state(self):
@@ -44,6 +45,7 @@ class FuzzerMonitor:
         self.error_counts = {"generator": 0, "runner": 0}
         self.stats = FuzzerStats()  # Start with zeros
         self.seed = self._extract_seed()
+        self.first_pass = True
         print("monitor_event:state_reset")
 
     def _extract_seed(self) -> int:
@@ -55,6 +57,7 @@ class FuzzerMonitor:
                         if "Seed" in line:
                             return int(line.split("Seed: ")[1])
                 file.seek(0)
+                print("waiting for seed")
                 time.sleep(5)
 
     def _get_stats(self) -> FuzzerStats:
@@ -99,11 +102,13 @@ class FuzzerMonitor:
 
             for crash in crashes:
                 f.write(f"seed:{self.seed}\n"
+                        f"time:{self.elapsed_time}\n"
                         f"error_message:\n{crash['error_message']}\n"
                         "==========================================\n")
 
     def _log_verification_discrepancies(self):
         with open('logs/output_diff.txt', 'a') as f:
+            # Find discrepancies that haven't been logged yet
             discrepancies = self.verification_results.find({
                 "results": {
                     "$elemMatch": {
@@ -112,22 +117,35 @@ class FuzzerMonitor:
                             {"results.Return_Value": {"$ne": None}}
                         ]
                     }
-                }
+                },
+                "logged_to_file": {"$ne": True}  # Only get unlogged results
             })
 
             for disc in discrepancies:
                 contract = self.compilation_log.find_one({"_id": ObjectId(disc['generation_id'])})
                 f.write(f"seed:{self.seed}\n"
+                        f"total_time:{self.total_time}\n:"
+                        f"time_elapsed:{self.elapsed_time}\n:"
+                        f"id:{disc['generation_id']}\n""]}"
                         f"verification_discrepancy:\n{disc['results']}\n"
                         f"original_contract:\n{contract['generation_result_nagini']}\n"
                         "===================================\n")
 
+                # Mark as logged
+                self.verification_results.update_one(
+                    {"_id": disc["_id"]},
+                    {"$set": {"logged_to_file": True}}
+                )
+
     def _handle_service_health(self, diff: FuzzerStats):
+        if self.first_pass:
+            self.first_pass = False
+            return
         # Check for stalled runners
         if diff.nagini_runs == 0 or diff.adder_runs == 0 or self.elapsed_time % self.RAM_CLEANUP_INTERVAL == 0:
             print("monitor_event:restarting_runners")
-            subprocess.run(['./scripts/kill_runners.sh'], shell=True)
-            subprocess.run(['./scripts/run_runners.sh'], shell=True)
+            subprocess.run(['./scripts/kill_runners.sh'], shell=True,stdout=subprocess.DEVNULL )
+            subprocess.run(['./scripts/run_runners.sh'], shell=True,stdout=subprocess.DEVNULL )
             self.error_counts["runner"] += 1
         else:
             self.error_counts["runner"] = 0
@@ -135,7 +153,7 @@ class FuzzerMonitor:
         # Check for stalled generator
         if diff.generated == 0:
             print("monitor_event:restarting_generator")
-            subprocess.run(['./scripts/run_generator.sh'], shell=True)
+            subprocess.run(['./scripts/run_generator.sh'], shell=True,stdout=subprocess.DEVNULL)
             self.error_counts["generator"] += 1
         else:
             self.error_counts["generator"] = 0
@@ -143,8 +161,8 @@ class FuzzerMonitor:
         # Full restart if error threshold reached
         if any(count >= self.RESTART_THRESHOLD for count in self.error_counts.values()):
             print("monitor_event:full_restart_triggered")
-            subprocess.run(['./scripts/kill_fuzzer.sh'], shell=True)
-            subprocess.run(['./scripts/start_fuzzer.sh'], shell=True)
+            subprocess.run(['./scripts/kill_fuzzer.sh'], shell=True, stdout=subprocess.DEVNULL)
+            subprocess.run(['./scripts/start_fuzzer.sh'], shell=True,stdout=subprocess.DEVNULL)
             self.reset_state()
 
     def monitor_cycle(self):
@@ -159,6 +177,7 @@ class FuzzerMonitor:
 
             self.stats = current_stats
             self.elapsed_time += self.INTERVAL
+            self.total_time += self.INTERVAL
             print()  # Empty line for readability
         except Exception as e:
             print(f"monitor_event:error\nerror_message:{str(e)}")

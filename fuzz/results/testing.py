@@ -39,10 +39,12 @@ def print_all_runtime_errors(host=None, port=None):
     compilation_log = db['compilation_log']
     handled_results = run_results.find({"is_handled": True})
     for res in handled_results:
-        print(res['_id'])
-        contract_data = compilation_log.find_one({"_id": ObjectId(res['_id'])})
-        print(contract_data['generation_result_adder'])
-
+        if "assert not (value" in str(res['result_adder']):
+            #print(res['result_adder'])
+            print(res)
+            contract_data = compilation_log.find_one({"_id": ObjectId('67751853d453bded01b3b426')})
+            print(contract_data['generation_result_adder'])
+            break
         #if res['runtime_error'] is not None:
         #    print(res['runtime_error'])
 

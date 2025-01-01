@@ -2,7 +2,9 @@
 
 # Kill all Python processes containing 'fuzz'
 echo "Stopping Python processes..."
-pkill -f "python.*fuzz"
+pkill -f "python.*runners"
+pkill -f "python.*generators"
+pkill -f "python.*verifiers"
 #pkill -f "./scripts/ram_monitor.sh"
 
 # Define ports used by containers
