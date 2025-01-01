@@ -21,7 +21,7 @@ class Bench:
             lines = [next(file) for _ in range(50)]
             for line in lines:
                 if "Seed" in line:
-                    self.seed = line.strip()
+                    self.seed = int(line.split("Seed: ")[1])
                     print(self.seed)
                     break
 
@@ -59,11 +59,11 @@ class Bench:
         diff_adder = adder_count - self.adder_count
         diff_verified = verified_count - self.verified_count
 
-        print(f"Diff_generated_contracts: {diff_generated}")
-        print(f"Diff_compilation_errors: {diff_compiler_errors}")
-        print(f"Diff_nagini_runs: {diff_nagini}")
-        print(f"Diff_adder_runs: {diff_adder}")
-        print(f"Diff_verified_results: {diff_verified}")
+        print(f"Diff_generated_contracts:{diff_generated}")
+        print(f"Diff_compilation_errors:{diff_compiler_errors}")
+        print(f"Diff_nagini_runs:{diff_nagini}")
+        print(f"Diff_adder_runs:{diff_adder}")
+        print(f"Diff_verified_results:{diff_verified}")
 
         self.generated_count = generated_count
         self.compiler_error_count = compiler_error_count
@@ -71,11 +71,11 @@ class Bench:
         self.adder_count = adder_count
         self.verified_count = verified_count
 
-        print(f"Total_generated_contracts: {self.generated_count}")
-        print(f"Total_compilation_errors: {self.compiler_error_count}")
-        print(f"Total_nagini_runs: {self.nagini_count}")
-        print(f"Total_adder_runs: {self.adder_count}")
-        print(f"Total_verified_results: {self.verified_count}")
+        print(f"Total_generated_contracts:{self.generated_count}")
+        print(f"Total_compilation_errors:{self.compiler_error_count}")
+        print(f"Total_nagini_runs:{self.nagini_count}")
+        print(f"Total_adder_runs:{self.adder_count}")
+        print(f"Total_verified_results:{self.verified_count}")
 
         self.print_contracts_with_compile_error()
         self.print_contract_with_output_difference()
@@ -115,7 +115,7 @@ class Bench:
 
             for contract_data in contracts_with_errors:
                 if contract_data['error_message'].find('This is an unhandled') != -1:
-                    f.write(f"Seed: {self.seed}\n")
+                    f.write(f"seed:{self.seed}\n")
                     f.write("Compiler crash")
                     f.write(f"error_message:\n{contract_data['error_message']}")
                     f.write("==========================================")
@@ -138,7 +138,7 @@ class Bench:
             })
 
             for ver_result in interesting_results:
-                f.write(f"Seed: {self.seed}\n")
+                f.write(f"seed:{self.seed}\n")
                 f.write("Verification discrepancy:\n")
                 f.write(str(ver_result['results']) + "\n")
 
