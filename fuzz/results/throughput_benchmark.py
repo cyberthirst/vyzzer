@@ -1,132 +1,110 @@
-from bson import ObjectId
+from dataclasses import dataclass
+from typing import Optional
 import subprocess
 import time
-
+from bson import ObjectId
 from fuzz.helpers.db import get_mongo_client
 
-class Bench:
-    def __init__(self, host=None, port=None):
-        self.set_state(host, port)
 
-    def print_seed(self):
+@dataclass
+class FuzzerStats:
+    generated: int = 0
+    compiler_errors: int = 0
+    nagini_runs: int = 0
+    adder_runs: int = 0
+    verified: int = 0
+
+    def diff(self, other: 'FuzzerStats') -> 'FuzzerStats':
+        return FuzzerStats(
+            self.generated - other.generated,
+            self.compiler_errors - other.compiler_errors,
+            self.nagini_runs - other.nagini_runs,
+            self.adder_runs - other.adder_runs,
+            self.verified - other.verified
+        )
+
+
+class FuzzerMonitor:
+    INTERVAL = 60
+    RESTART_THRESHOLD = 2
+    RAM_CLEANUP_INTERVAL = 300
+
+    def __init__(self, host: Optional[str] = None, port: Optional[int] = None):
+        self.host = host
+        self.port = port
+        self.reset_state()
+
+    def reset_state(self):
+        """Reset all internal state to default values"""
+        self.db = get_mongo_client(self.host, self.port)
+        self.compilation_log = self.db['compilation_log']
+        self.run_results = self.db['run_results']
+        self.verification_results = self.db['verification_results']
+        self.elapsed_time = 0
+        self.error_counts = {"generator": 0, "runner": 0}
+        self.stats = FuzzerStats()  # Start with zeros
+        self.seed = self._extract_seed()
+        print("monitor_event:state_reset")
+
+    def _extract_seed(self) -> int:
         with open('logs/generator.log', 'r') as file:
             while True:
-                has_50_lines = len(file.readlines()) >= 50
-                if has_50_lines:
+                if len(file.readlines()) >= 50:
                     file.seek(0)
-                    break
+                    for line in (next(file) for _ in range(50)):
+                        if "Seed" in line:
+                            return int(line.split("Seed: ")[1])
                 file.seek(0)
                 time.sleep(5)
 
-            lines = [next(file) for _ in range(50)]
-            for line in lines:
-                if "Seed" in line:
-                    self.seed = int(line.split("Seed: ")[1])
-                    print(self.seed)
-                    break
+    def _get_stats(self) -> FuzzerStats:
+        return FuzzerStats(
+            generated=self.compilation_log.count_documents({}),
+            compiler_errors=self.compilation_log.count_documents({"error_type": {"$ne": None}}),
+            nagini_runs=self.run_results.count_documents({"result_nagini": {"$exists": True}}),
+            adder_runs=self.run_results.count_documents({"result_adder": {"$exists": True}}),
+            verified=self.run_results.count_documents({"is_handled": True})
+        )
 
-    def set_state(self, host=None, port=None):
-        self.db = get_mongo_client(host, port)
-        self.compilation_log = self.db['compilation_log']
-        self.run_results = self.db['run_results']
-        # set counts to 1 to avoid triggering error detection
-        # in the first run
-        self.generated_count = 1
-        self.compiler_error_count = 1
-        self.nagini_count = 1
-        self.adder_count = 1
-        self.verified_count = 1
-        self.time = 0
-        self.generator_errors = 0
-        self.runner_errors = 0
-        self.INTERVAL = 60
-        self.seed = ''
-        self.print_seed()
+    def _log_metrics(self, current: FuzzerStats, diff: FuzzerStats):
+        metrics = {
+            # Differences
+            "diff_generated_contracts": diff.generated,
+            "diff_compilation_errors": diff.compiler_errors,
+            "diff_nagini_runs": diff.nagini_runs,
+            "diff_adder_runs": diff.adder_runs,
+            "diff_verified_results": diff.verified,
+            # Totals
+            "total_generated_contracts": current.generated,
+            "total_compilation_errors": current.compiler_errors,
+            "total_nagini_runs": current.nagini_runs,
+            "total_adder_runs": current.adder_runs,
+            "total_verified_results": current.verified,
+            # Time and State
+            "elapsed_time": self.elapsed_time,
+            "current_seed": self.seed,
+            "generator_errors": self.error_counts["generator"],
+            "runner_errors": self.error_counts["runner"]
+        }
 
-    def print_throughput(self):
-        compilation_log = self.db['compilation_log']
-        run_results = self.db['run_results']
+        for key, value in metrics.items():
+            print(f"{key}:{value}")
 
-        generated_count = compilation_log.count_documents({})
-        compiler_error_count = compilation_log.count_documents({"error_type": {"$ne": None}})
-        nagini_count = run_results.count_documents({"result_nagini": {"$exists": True}})
-        adder_count = run_results.count_documents({"result_adder": {"$exists": True}})
-        verified_count = run_results.count_documents({"is_handled": True})
-
-        diff_generated = generated_count - self.generated_count
-        diff_compiler_errors = compiler_error_count - self.compiler_error_count
-        diff_nagini = nagini_count - self.nagini_count
-        diff_adder = adder_count - self.adder_count
-        diff_verified = verified_count - self.verified_count
-
-        print(f"Diff_generated_contracts:{diff_generated}")
-        print(f"Diff_compilation_errors:{diff_compiler_errors}")
-        print(f"Diff_nagini_runs:{diff_nagini}")
-        print(f"Diff_adder_runs:{diff_adder}")
-        print(f"Diff_verified_results:{diff_verified}")
-
-        self.generated_count = generated_count
-        self.compiler_error_count = compiler_error_count
-        self.nagini_count = nagini_count
-        self.adder_count = adder_count
-        self.verified_count = verified_count
-
-        print(f"Total_generated_contracts:{self.generated_count}")
-        print(f"Total_compilation_errors:{self.compiler_error_count}")
-        print(f"Total_nagini_runs:{self.nagini_count}")
-        print(f"Total_adder_runs:{self.adder_count}")
-        print(f"Total_verified_results:{self.verified_count}")
-
-        self.print_contracts_with_compile_error()
-        self.print_contract_with_output_difference()
-
-        print("\n")
-
-        # runners either stopped working or 5 mins passed so we should free RAM
-        if diff_nagini == 0 or diff_adder == 0 or self.time % 300 == 0:
-            subprocess.run(['./scripts/kill_runners.sh'], shell=True)
-            subprocess.run(['./scripts/run_runners.sh'], shell=True)
-            self.runner_errors += 1
-        else:
-            self.runner_errors = 0
-
-        if diff_generated == 0:
-            # generator doesn't stall, but crashes - no need to restart
-            subprocess.run(['./scripts/run_generator.sh'], shell=True)
-            self.generator_errors += 1
-        else:
-            self.generator_errors = 0
-
-        # restarting individual services didn't help, restart the whole fuzzer
-        if self.runner_errors == 2 or self.generator_errors == 2:
-            subprocess.run(['./scripts/kill_fuzzer.sh'], shell=True)
-            subprocess.run(['./scripts/start_fuzzer.sh'], shell=True)
-            pass
-
-    def print_time(self):
-        print(f"Time: {self.time}")
-        self.time += self.INTERVAL
-
-    def print_contracts_with_compile_error(self):
-        compilation_log = self.db['compilation_log']
-
+    def _log_compiler_crashes(self):
         with open('logs/compiler_crash.txt', 'a') as f:
-            contracts_with_errors = compilation_log.find({"error_type": {"$ne": None}})
+            crashes = self.compilation_log.find({
+                "error_type": {"$ne": None},
+                "error_message": {"$regex": "This is an unhandled"}
+            })
 
-            for contract_data in contracts_with_errors:
-                if contract_data['error_message'].find('This is an unhandled') != -1:
-                    f.write(f"seed:{self.seed}\n")
-                    f.write("Compiler crash")
-                    f.write(f"error_message:\n{contract_data['error_message']}")
-                    f.write("==========================================")
+            for crash in crashes:
+                f.write(f"seed:{self.seed}\n"
+                        f"error_message:\n{crash['error_message']}\n"
+                        "==========================================\n")
 
-    def print_contract_with_output_difference(self):
-        verification_results = self.db['verification_results']
-        compilation_log = self.db['compilation_log']
-
+    def _log_verification_discrepancies(self):
         with open('logs/output_diff.txt', 'a') as f:
-            # Direct query for verification results with non-null Storage or Return_Value
-            interesting_results = verification_results.find({
+            discrepancies = self.verification_results.find({
                 "results": {
                     "$elemMatch": {
                         "$or": [
@@ -137,21 +115,62 @@ class Bench:
                 }
             })
 
-            for ver_result in interesting_results:
-                f.write(f"seed:{self.seed}\n")
-                f.write("Verification discrepancy:\n")
-                f.write(str(ver_result['results']) + "\n")
+            for disc in discrepancies:
+                contract = self.compilation_log.find_one({"_id": ObjectId(disc['generation_id'])})
+                f.write(f"seed:{self.seed}\n"
+                        f"verification_discrepancy:\n{disc['results']}\n"
+                        f"original_contract:\n{contract['generation_result_nagini']}\n"
+                        "===================================\n")
 
-                # Get and print the original contract
-                contract_data = compilation_log.find_one({"_id": ObjectId(ver_result['generation_id'])})
-                f.write("\nOriginal Contract:\n")
-                f.write(contract_data['generation_result_nagini'] + "\n")
-                f.write("===================================\n")
+    def _handle_service_health(self, diff: FuzzerStats):
+        # Check for stalled runners
+        if diff.nagini_runs == 0 or diff.adder_runs == 0 or self.elapsed_time % self.RAM_CLEANUP_INTERVAL == 0:
+            print("monitor_event:restarting_runners")
+            subprocess.run(['./scripts/kill_runners.sh'], shell=True)
+            subprocess.run(['./scripts/run_runners.sh'], shell=True)
+            self.error_counts["runner"] += 1
+        else:
+            self.error_counts["runner"] = 0
+
+        # Check for stalled generator
+        if diff.generated == 0:
+            print("monitor_event:restarting_generator")
+            subprocess.run(['./scripts/run_generator.sh'], shell=True)
+            self.error_counts["generator"] += 1
+        else:
+            self.error_counts["generator"] = 0
+
+        # Full restart if error threshold reached
+        if any(count >= self.RESTART_THRESHOLD for count in self.error_counts.values()):
+            print("monitor_event:full_restart_triggered")
+            subprocess.run(['./scripts/kill_fuzzer.sh'], shell=True)
+            subprocess.run(['./scripts/start_fuzzer.sh'], shell=True)
+            self.reset_state()
+
+    def monitor_cycle(self):
+        try:
+            current_stats = self._get_stats()
+            diff_stats = current_stats.diff(self.stats)
+
+            self._log_metrics(current_stats, diff_stats)
+            self._log_compiler_crashes()
+            self._log_verification_discrepancies()
+            self._handle_service_health(diff_stats)
+
+            self.stats = current_stats
+            self.elapsed_time += self.INTERVAL
+            print()  # Empty line for readability
+        except Exception as e:
+            print(f"monitor_event:error\nerror_message:{str(e)}")
+            self.reset_state()
+
+
+def main():
+    monitor = FuzzerMonitor()
+    while True:
+        monitor.monitor_cycle()
+        time.sleep(monitor.INTERVAL)
 
 
 if __name__ == "__main__":
-    bench = Bench()
-    while True:
-        bench.print_time()
-        bench.print_throughput()
-        time.sleep(bench.INTERVAL)
+    main()
