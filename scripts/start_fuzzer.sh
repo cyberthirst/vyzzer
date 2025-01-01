@@ -38,8 +38,8 @@ python fuzz/generators/run_diff_ivy.py > logs/generator.log 2>&1 &
 echo "Starting ivy verifier..."
 python fuzz/verifiers/verifier_ivy.py > logs/verifier_ivy.log 2>&1 &
 
-echo "Starting RAM monitor..."
-./scripts/ram_monitor.sh > logs/ram_monitor.log 2>&1 &
+#echo "Starting RAM monitor..."
+#./scripts/ram_monitor.sh > logs/ram_monitor.log 2>&1 &
 
 deactivate
 
