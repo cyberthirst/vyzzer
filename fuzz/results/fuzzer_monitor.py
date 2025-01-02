@@ -4,6 +4,8 @@ import subprocess
 import time
 from bson import ObjectId
 from fuzz.helpers.db import get_mongo_client
+import os
+import glob
 
 
 @dataclass
@@ -33,7 +35,22 @@ class FuzzerMonitor:
         self.host = host
         self.port = port
         self.total_time = 0
+        self._init_file_counters()
         self.reset_state()
+
+    def _init_file_counters(self):
+        """Initialize file counters based on existing files"""
+        # Get the next available benchmark number
+        bench_files = glob.glob('results/bench/data*.txt')
+        self.bench_counter = len(bench_files) + 1
+
+        # Get the next available crash number
+        crash_files = glob.glob('results/crashes/crash*.txt')
+        self.crash_counter = len(crash_files) + 1
+
+        # Get the next available storage diff number
+        diff_files = glob.glob('results/storage-diff/diff*.txt')
+        self.diff_counter = len(diff_files) + 1
 
     def reset_state(self):
         """Reset all internal state to default values"""
@@ -43,10 +60,16 @@ class FuzzerMonitor:
         self.verification_results = self.db['verification_results']
         self.elapsed_time = 0
         self.error_counts = {"generator": 0, "runner": 0}
-        self.stats = FuzzerStats()  # Start with zeros
+        self.stats = FuzzerStats()
         self.seed = self._extract_seed()
         self.first_pass = True
-        print("monitor_event:state_reset")
+
+        # Create new benchmark and metadata files (empty)
+        self.bench_file = f'results/bench/data{self.bench_counter}.txt'
+        self.metadata_file = f'results/bench/bench-metadata{self.bench_counter}.txt'
+        # Just create empty files
+        open(self.bench_file, 'w').close()
+        open(self.metadata_file, 'w').close()
 
     def _extract_seed(self) -> int:
         with open('logs/generator.log', 'r') as file:
@@ -57,7 +80,8 @@ class FuzzerMonitor:
                         if "Seed" in line:
                             return int(line.split("Seed: ")[1])
                 file.seek(0)
-                print("waiting for seed")
+                with open(self.metadata_file, 'a') as mf:
+                    mf.write("waiting for seed\n")
                 time.sleep(5)
 
     def _get_stats(self) -> FuzzerStats:
@@ -90,79 +114,99 @@ class FuzzerMonitor:
             "runner_errors": self.error_counts["runner"]
         }
 
-        for key, value in metrics.items():
-            print(f"{key}:{value}")
+        with open(self.bench_file, 'a') as f:
+            for key, value in metrics.items():
+                f.write(f"{key}:{value}\n")
+            f.write("\n")  # Empty line for readability
 
     def _log_compiler_crashes(self):
-        with open('logs/compiler_crash.txt', 'a') as f:
-            crashes = self.compilation_log.find({
-                "error_type": {"$ne": None},
-                "error_message": {"$regex": "This is an unhandled"}
-            })
+        crashes = self.compilation_log.find({
+            "error_type": {"$ne": None},
+            "error_message": {"$regex": "This is an unhandled"}
+        })
 
-            for crash in crashes:
+        for crash in crashes:
+            crash_file = f'results/crashes/crash{self.crash_counter}.txt'
+            with open(crash_file, 'w') as f:
                 f.write(f"seed:{self.seed}\n"
                         f"time:{self.elapsed_time}\n"
                         f"error_message:\n{crash['error_message']}\n"
                         "==========================================\n")
+            self.crash_counter += 1
 
     def _log_verification_discrepancies(self):
-        with open('logs/output_diff.txt', 'a') as f:
-            # Find discrepancies that haven't been logged yet
-            discrepancies = self.verification_results.find({
-                "results": {
-                    "$elemMatch": {
-                        "$or": [
-                            {"results.Storage": {"$ne": None}},
-                            {"results.Return_Value": {"$ne": None}}
-                        ]
-                    }
-                },
-                "logged_to_file": {"$ne": True}  # Only get unlogged results
-            })
+        discrepancies = self.verification_results.find({
+            "results": {
+                "$elemMatch": {
+                    "$or": [
+                        {"results.Storage": {"$ne": None}},
+                        {"results.Return_Value": {"$ne": None}}
+                    ]
+                }
+            },
+            "logged_to_file": {"$ne": True}
+        })
 
-            for disc in discrepancies:
-                contract = self.compilation_log.find_one({"_id": ObjectId(disc['generation_id'])})
+        for disc in discrepancies:
+            contract = self.compilation_log.find_one({"_id": ObjectId(disc['generation_id'])})
+            diff_file = f'results/storage-diff/diff{self.diff_counter}.txt'
+            with open(diff_file, 'w') as f:
                 f.write(f"seed:{self.seed}\n"
-                        f"total_time:{self.total_time}\n:"
-                        f"time_elapsed:{self.elapsed_time}\n:"
-                        f"id:{disc['generation_id']}\n""]}"
+                        f"total_time:{self.total_time}\n"
+                        f"time_elapsed:{self.elapsed_time}\n"
+                        f"id:{disc['generation_id']}\n"
                         f"verification_discrepancy:\n{disc['results']}\n"
                         f"original_contract:\n{contract['generation_result_nagini']}\n"
                         "===================================\n")
+            self.diff_counter += 1
 
-                # Mark as logged
-                self.verification_results.update_one(
-                    {"_id": disc["_id"]},
-                    {"$set": {"logged_to_file": True}}
-                )
+            # Mark as logged
+            self.verification_results.update_one(
+                {"_id": disc["_id"]},
+                {"$set": {"logged_to_file": True}}
+            )
 
     def _handle_service_health(self, diff: FuzzerStats):
         if self.first_pass:
             self.first_pass = False
             return
+
         # Check for stalled runners
         if diff.nagini_runs == 0 or diff.adder_runs == 0 or self.elapsed_time % self.RAM_CLEANUP_INTERVAL == 0:
-            print("monitor_event:restarting_runners")
-            subprocess.run(['./scripts/kill_runners.sh'], shell=True,stdout=subprocess.DEVNULL )
-            subprocess.run(['./scripts/run_runners.sh'], shell=True,stdout=subprocess.DEVNULL )
+            with open(self.metadata_file, 'a') as f:
+                f.write("monitor_event:restarting_runners\n")
+            subprocess.run(['./scripts/kill_runners.sh'], shell=True,
+                           stdout=open(self.metadata_file, 'a'),
+                           stderr=subprocess.STDOUT)
+            subprocess.run(['./scripts/run_runners.sh'], shell=True,
+                           stdout=open(self.metadata_file, 'a'),
+                           stderr=subprocess.STDOUT)
             self.error_counts["runner"] += 1
         else:
             self.error_counts["runner"] = 0
 
         # Check for stalled generator
         if diff.generated == 0:
-            print("monitor_event:restarting_generator")
-            subprocess.run(['./scripts/run_generator.sh'], shell=True,stdout=subprocess.DEVNULL)
+            with open(self.metadata_file, 'a') as f:
+                f.write("monitor_event:restarting_generator\n")
+            subprocess.run(['./scripts/run_generator.sh'], shell=True,
+                           stdout=open(self.metadata_file, 'a'),
+                           stderr=subprocess.STDOUT)
             self.error_counts["generator"] += 1
         else:
             self.error_counts["generator"] = 0
 
         # Full restart if error threshold reached
         if any(count >= self.RESTART_THRESHOLD for count in self.error_counts.values()):
-            print("monitor_event:full_restart_triggered")
-            subprocess.run(['./scripts/kill_fuzzer.sh'], shell=True, stdout=subprocess.DEVNULL)
-            subprocess.run(['./scripts/start_fuzzer.sh'], shell=True,stdout=subprocess.DEVNULL)
+            with open(self.metadata_file, 'a') as f:
+                f.write("monitor_event:full_restart_triggered\n")
+            subprocess.run(['./scripts/kill_fuzzer.sh'], shell=True,
+                           stdout=open(self.metadata_file, 'a'),
+                           stderr=subprocess.STDOUT)
+            subprocess.run(['./scripts/start_fuzzer.sh'], shell=True,
+                           stdout=open(self.metadata_file, 'a'),
+                           stderr=subprocess.STDOUT)
+            self.bench_counter += 1  # Increment before reset
             self.reset_state()
 
     def monitor_cycle(self):
@@ -178,9 +222,10 @@ class FuzzerMonitor:
             self.stats = current_stats
             self.elapsed_time += self.INTERVAL
             self.total_time += self.INTERVAL
-            print()  # Empty line for readability
         except Exception as e:
-            print(f"monitor_event:error\nerror_message:{str(e)}")
+            with open(self.metadata_file, 'a') as f:
+                f.write(f"monitor_event:error\nerror_message:{str(e)}\n")
+            self.bench_counter += 1  # Increment before reset
             self.reset_state()
 
 
