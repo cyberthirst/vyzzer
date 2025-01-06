@@ -1,0 +1,35 @@
+seed:647647244
+total_time:28200
+time_elapsed:6960
+id:6776e42f90ce15319732da0a
+verification_discrepancy:
+[{'compilers': ['result_adder', 'result_nagini'], 'function': 'func_0', 'deployment': 0, 'params_set': 0, 'results': {}}, {'compilers': ['result_adder', 'result_nagini'], 'function': 'func_1', 'deployment': 0, 'params_set': 0, 'results': {'Storage': "Storage discrepancy: {'x_DA_INT_0': [0], 'x_INT_1': 0, 'x_DA_BYTESM_0': []} | {'x_DA_BYTESM_0': [], 'x_DA_INT_0': [], 'x_INT_1': 0}", 'Return_Value': None}}]
+original_contract:
+C_INT_0: constant(uint8) = 0
+x_DA_BYTESM_0: DynArray[bytes1,1]
+x_DA_INT_0: DynArray[uint8,1]
+x_INT_1: uint8
+
+@external
+@nonreentrant
+@nonpayable
+def func_0(x_INT_2: uint16) -> bool:
+    self.x_DA_INT_0.append(0)
+    x_BYTES_0: Bytes[1000] = b"0"
+    return False
+
+@external
+@pure
+def func_1(x_INT_3: uint8):
+    return
+
+@external
+@nonreentrant
+@nonpayable
+def __default__():
+    self.x_DA_INT_0.append(0)
+    self.x_DA_INT_0.append(0)
+
+
+
+===================================

@@ -1,0 +1,36 @@
+seed:647647244
+total_time:21660
+time_elapsed:420
+id:6776d27490ce153197311330
+verification_discrepancy:
+[{'compilers': ['result_adder', 'result_nagini'], 'function': 'func_1', 'deployment': 0, 'params_set': 0, 'results': {'Storage': None, 'Return_Value': None}}, {'compilers': ['result_adder', 'result_nagini'], 'function': 'func_2', 'deployment': 0, 'params_set': 0, 'results': {'Storage': "Storage discrepancy: {'x_DA_BOOL_0': [], 'x_INT_0': 13, 'x_ADDRESS_0': '0x0000000000000000000000000000000000000000', 'x_INT_1': 0} | {'x_DA_BOOL_0': [], 'x_INT_0': 0, 'x_ADDRESS_0': '0x0000000000000000000000000000000000000000', 'x_INT_1': 0}", 'Return_Value': None}}]
+original_contract:
+x_DA_BOOL_0: DynArray[bool,1]
+x_INT_0: uint8
+x_ADDRESS_0: address
+x_INT_1: uint8
+
+@deploy
+def __init__():
+    return
+
+@internal
+@pure
+def func_0(x_FL_BYTESM_0: bytes26[1]):
+    return
+
+@external
+@nonpayable
+def func_1(x_INT_2: uint8, x_INT_3: uint16):
+    self.x_INT_0 = x_INT_2
+
+
+@external
+@nonreentrant
+@nonpayable
+def func_2(x_INT_4: uint8, x_INT_5: uint16):
+    self.x_INT_1 = 0
+
+
+
+===================================

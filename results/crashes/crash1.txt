@@ -1,0 +1,15 @@
+seed:3328647119
+time:6780
+error_message:
+missing symbols: {'raw_call_builtin1'}
+
+  function "func_0", line 7:57 
+       6     else:
+  ---> 7         send(0x0000000000000000000000000000000000000000, convert(((False != False) and True), uint256) + convert(((False != False) and raw_call(0x0000000000000000000000000000000000000000, b"0", revert_on_failure=False)), uint256))
+  ----------------------------------------------------------------^
+       8
+
+
+This is an unhandled internal compiler error. Please create an issue on Github to notify the developers!
+https://github.com/vyperlang/vyper/issues/new?template=bug.md
+==========================================

@@ -1,0 +1,31 @@
+seed:4033125919
+total_time:32580
+time_elapsed:1740
+id:6776fd54c13e3e67567a15db
+verification_discrepancy:
+[{'compilers': ['result_adder', 'result_nagini'], 'function': 'func_0', 'deployment': 0, 'params_set': 0, 'results': {'Storage': "Storage discrepancy: {'x_DA_ADDRESS_0': [], 'x_DA_ADDRESS_1': ['0x0000000000000000000000000000000000000000']} | {'x_DA_ADDRESS_0': [], 'x_DA_ADDRESS_1': []}", 'Return_Value': None}}, {'compilers': ['result_adder', 'result_nagini'], 'function': 'func_1', 'deployment': 0, 'params_set': 0, 'results': {'Storage': "Storage discrepancy: {'x_DA_ADDRESS_0': [], 'x_DA_ADDRESS_1': ['0x0000000000000000000000000000000000000000']} | {'x_DA_ADDRESS_0': [], 'x_DA_ADDRESS_1': []}", 'Return_Value': None}}]
+original_contract:
+x_DA_ADDRESS_0: DynArray[address,1]
+x_DA_ADDRESS_1: DynArray[address,100]
+
+@external
+@nonreentrant
+@nonpayable
+def func_0(x_BOOL_0: bool):
+    x_INT_0: uint8 = 0
+    self.x_DA_ADDRESS_1.append(0x0000000000000000000000000000000000000000)
+    x_BOOL_1: bool = False
+
+
+@external
+@pure
+def func_1(x_BOOL_2: bool) -> address:
+    return 0x0000000000000000000000000000000000000000
+
+@external
+@pure
+def __default__():
+    return
+
+
+===================================

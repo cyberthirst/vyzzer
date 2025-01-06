@@ -1,0 +1,20 @@
+seed:9239297
+total_time:35640
+time_elapsed:1740
+id:677708ffeca14b32bac7fa32
+verification_discrepancy:
+[{'compilers': ['result_adder', 'result_nagini'], 'function': 'func_0', 'deployment': 0, 'params_set': 0, 'results': {'Storage': "Storage discrepancy: {'x_INT_0': 0, 'x_BOOL_0': True, 'x_INT_1': 0} | {'x_INT_0': 0, 'x_INT_1': 0, 'x_BOOL_0': False}", 'Return_Value': None}}]
+original_contract:
+x_INT_0: uint8
+x_INT_1: uint8
+x_BOOL_0: bool
+
+@external
+@nonreentrant
+@payable
+def func_0():
+    self.x_BOOL_0 = raw_call(0x0000000000000000000000000000000000000000, b"0", value=0, revert_on_failure=False)
+
+
+
+===================================

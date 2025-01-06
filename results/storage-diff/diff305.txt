@@ -1,0 +1,19 @@
+seed:9239297
+total_time:34560
+time_elapsed:660
+id:677705fceca14b32bac79e1c
+verification_discrepancy:
+[{'compilers': ['result_adder', 'result_nagini'], 'function': 'func_0', 'deployment': 0, 'params_set': 0, 'results': {'Storage': "Storage discrepancy: {'x_BYTES_0': b'', 'x_BOOL_0': True} | {'x_BYTES_0': b'', 'x_BOOL_0': False}", 'Return_Value': None}}]
+original_contract:
+x_BYTES_0: Bytes[1]
+x_BOOL_0: bool
+
+@external
+@nonreentrant
+@payable
+def func_0():
+    self.x_BOOL_0 = raw_call(0x0000000000000000000000000000000000000000, b"0", value=0, revert_on_failure=False)
+
+
+
+===================================

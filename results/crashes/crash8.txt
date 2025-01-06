@@ -1,0 +1,15 @@
+seed:9239297
+time:1440
+error_message:
+missing symbols: {'raw_call_builtin1'}
+
+  function "__default__", line 6:18 
+       5 def __default__() -> uint136:
+  ---> 6     send(convert((0 + convert((False and raw_call(0x0000000000000000000000000000000000000000, b"0", is_delegate_call=True, revert_on_failure=False)), uint8)) + 0, address), 0 + 0)
+  -------------------------^
+       7     return 0
+
+
+This is an unhandled internal compiler error. Please create an issue on Github to notify the developers!
+https://github.com/vyperlang/vyper/issues/new?template=bug.md
+==========================================

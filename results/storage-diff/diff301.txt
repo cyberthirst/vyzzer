@@ -1,0 +1,33 @@
+seed:4033125919
+total_time:33120
+time_elapsed:2280
+id:6776fed2c13e3e67567a34b5
+verification_discrepancy:
+[{'compilers': ['result_adder', 'result_nagini'], 'function': 'func_0', 'deployment': 0, 'params_set': 0, 'results': {}}, {'compilers': ['result_adder', 'result_nagini'], 'function': 'func_1', 'deployment': 0, 'params_set': 0, 'results': {'Storage': "Storage discrepancy: {'x_DA_INT_0': [0], 'x_DA_INT_1': []} | {'x_DA_INT_0': [], 'x_DA_INT_1': []}", 'Return_Value': None}}]
+original_contract:
+x_DA_INT_0: DynArray[uint8,1]
+x_DA_INT_1: DynArray[uint8,1]
+
+@external
+@nonpayable
+def func_0() -> uint8:
+    x_DA_INT_2: DynArray[uint8,1] = [0]
+    self.x_DA_INT_0.append(0)
+    self.x_DA_INT_0.append(0)
+    return 0
+
+@external
+@pure
+def func_1(x_INT_0: uint8):
+    return
+
+@external
+@nonpayable
+def __default__():
+    x_DA_INT_3: DynArray[uint8,1] = [0]
+    x_DA_INT_3.append(0)
+    self.x_DA_INT_1.append(0)
+
+
+
+===================================

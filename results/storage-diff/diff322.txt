@@ -1,0 +1,25 @@
+seed:2542101728
+total_time:41040
+time_elapsed:3780
+id:67771d8353b1ebd8a9e6401c
+verification_discrepancy:
+[{'compilers': ['result_adder', 'result_nagini'], 'function': 'func_0', 'deployment': 0, 'params_set': 0, 'results': {'Storage': None, 'Return_Value': None}}, {'compilers': ['result_adder', 'result_nagini'], 'function': 'func_1', 'deployment': 0, 'params_set': 0, 'results': {'Storage': "Storage discrepancy: {'x_DA_BYTES_0': [b'0'], 'x_INT_0': 0} | {'x_DA_BYTES_0': [b'\\x00'], 'x_INT_0': 0}", 'Return_Value': None}}]
+original_contract:
+x_DA_BYTES_0: DynArray[Bytes[1000],1]
+x_INT_0: uint8
+
+@external
+@nonpayable
+def func_0() -> String[39]:
+    send(convert(b"0", address), 0)
+    return ""
+
+@external
+@nonreentrant
+@payable
+def func_1() -> (uint8, bool):
+    self.x_DA_BYTES_0.append(b"0")
+    return 0,False
+
+
+===================================

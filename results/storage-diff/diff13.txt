@@ -1,0 +1,36 @@
+seed:1191266364
+total_time:10080
+time_elapsed:900
+id:6776a3b4e459c2fec9d26d99
+verification_discrepancy:
+[{'compilers': ['result_adder', 'result_nagini'], 'function': 'func_0', 'deployment': 0, 'params_set': 0, 'results': {}}, {'compilers': ['result_adder', 'result_nagini'], 'function': 'func_1', 'deployment': 0, 'params_set': 0, 'results': {'Storage': "Storage discrepancy: {'x_DA_FL_INT_0': [], 'x_DA_INT_0': [0]} | {'x_DA_FL_INT_0': [], 'x_DA_INT_0': []}", 'Return_Value': None}}]
+original_contract:
+x_DA_FL_INT_0: DynArray[uint8[1],1]
+IM_INT_0: immutable(uint8)
+x_DA_INT_0: DynArray[uint8,1]
+
+@deploy
+def __init__():
+    IM_INT_0 = 0
+    return
+
+@external
+@nonreentrant
+@payable
+def func_0() -> address:
+    self.x_DA_INT_0[0] = 0
+    self.x_DA_INT_0[0] = 0
+    x_DA_FL_INT_1: DynArray[uint8[100],1] = [[0, 168, 147, 217, 246, 155, 210, 164, 123, 194, 251, 205, 190, 182, 233, 206, 143, 93, 135, 96, 212, 81, 20, 151, 10, 63, 227, 94, 178, 127, 96, 161, 180, 75, 66, 86, 124, 65, 38, 93, 73, 119, 152, 155, 178, 252, 73, 55, 183, 213, 134, 250, 145, 165, 5, 96, 33, 2, 85, 227, 181, 204, 244, 247, 49, 175, 24, 194, 51, 246, 51, 96, 22, 234, 145, 154, 119, 89, 75, 44, 230, 11, 186, 18, 66, 148, 187, 44, 87, 220, 133, 74, 253, 55, 180, 181, 244, 216, 193, 36]]
+    return 0x0000000000000000000000000000000000000000
+
+@external
+@nonreentrant
+@payable
+def func_1() -> Bytes[1000]:
+    x_INT_1: int8 = -128
+    self.x_DA_INT_0 = [0]
+    x_DA_INT_1: DynArray[uint8,1] = [0]
+    return b"0"
+
+
+===================================

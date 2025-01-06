@@ -1,0 +1,24 @@
+seed:2542101728
+total_time:41460
+time_elapsed:4200
+id:67771ed353b1ebd8a9e6590c
+verification_discrepancy:
+[{'compilers': ['result_adder', 'result_nagini'], 'function': 'func_0', 'deployment': 0, 'params_set': 0, 'results': {'Storage': None, 'Return_Value': None}}, {'compilers': ['result_adder', 'result_nagini'], 'function': 'func_1', 'deployment': 0, 'params_set': 0, 'results': {'Storage': "Storage discrepancy: {'x_DA_FL_BOOL_0': [[False, True, True, False, False, False, False, False, False, False, False, True, True, False, True, True, False, False, True, False, False, False, False, False, True, False, False, False, True, True, False, True, True, True, True, True, False, True, True, True, False, False, False, False, True, True, True, True, True, True, False, True, True, True, False, True, True, True, True, False, True, False, False, True, True, False, True, True, True, False, False, True, True, True, False, True, False, True, True, True, False, True, True, True, False, True, False, False, False, True, True, False, True, True, True, False, True, True, True, True]]} | {'x_DA_FL_BOOL_0': [[False, False, True, False, False, False, False, False, False, False, False, True, True, False, True, True, False, False, True, False, False, False, False, False, True, False, False, False, True, True, False, True, True, True, True, True, False, True, True, True, False, False, False, False, True, True, True, True, True, True, False, True, True, True, False, True, True, True, True, False, True, False, False, True, True, False, True, True, True, False, False, True, True, True, False, True, False, True, True, True, False, True, True, True, False, True, False, False, False, True, True, False, True, True, True, False, True, True, True, True]]}", 'Return_Value': None}}]
+original_contract:
+x_DA_FL_BOOL_0: DynArray[bool[100],100]
+
+@external
+@nonpayable
+def func_0() -> String[39]:
+    send(convert(b"0", address), 0)
+    return ""
+
+@external
+@nonreentrant
+@payable
+def func_1() -> (uint8, bool):
+    self.x_DA_FL_BOOL_0.append([False, True, True, False, False, False, False, False, False, False, False, True, True, False, True, True, False, False, True, False, False, False, False, False, True, False, False, False, True, True, False, True, True, True, True, True, False, True, True, True, False, False, False, False, True, True, True, True, True, True, False, True, True, True, False, True, True, True, True, False, True, False, False, True, True, False, True, True, True, False, False, True, True, True, False, True, False, True, True, True, False, True, True, True, False, True, False, False, False, True, True, False, True, True, True, False, True, True, True, True])
+    return 0,False
+
+
+===================================

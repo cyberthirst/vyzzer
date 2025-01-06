@@ -1,0 +1,33 @@
+seed:2675045968
+total_time:4860
+time_elapsed:660
+id:67768f3b200fb02b411fb012
+verification_discrepancy:
+[{'compilers': ['result_adder', 'result_nagini'], 'function': 'func_0', 'deployment': 0, 'params_set': 0, 'results': {}}, {'compilers': ['result_adder', 'result_nagini'], 'function': 'func_1', 'deployment': 0, 'params_set': 0, 'results': {'Storage': "Storage discrepancy: {'x_DA_BYTES_0': [b'0'], 'x_BYTES_0': b''} | {'x_DA_BYTES_0': [], 'x_BYTES_0': b''}", 'Return_Value': None}}, {'compilers': ['result_adder', 'result_nagini'], 'function': 'func_2', 'deployment': 0, 'params_set': 0, 'results': {}}]
+original_contract:
+x_DA_BYTES_0: DynArray[Bytes[1000],1]
+x_BYTES_0: Bytes[256]
+
+@external
+@nonpayable
+def func_0(x_STRING_0: String[1000]):
+    self.x_DA_BYTES_0.append(b"0")
+    self.x_DA_BYTES_0.append(b"0")
+
+
+@external
+@pure
+def func_1() -> address:
+    return 0x0000000000000000000000000000000000000000
+
+@external
+@nonpayable
+def func_2():
+    self.x_DA_BYTES_0.pop()
+    for i_0: uint256 in range(4, 10):
+        return
+
+
+
+
+===================================
